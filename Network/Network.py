@@ -10,8 +10,8 @@ PhD Candidate in Computer Science,
 University of Maryland, College Park
 """
 
-import tensorflow as tf
-from tensorflow.keras import layers, models
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
 import sys
 import numpy as np
 # Don't generate pyc codes
@@ -21,63 +21,49 @@ def HomographyModel(Img, ImageSize, MiniBatchSize):
     """
     Inputs: 
     Img is a MiniBatch of the current image
-    ImageSize - Size of the Image (128x128x2)
+    ImageSize - Size of the Image (128x128x6)
     Outputs:
     prLogits - logits output of the network
     prSoftMax - softmax output of the network
     """
-
-    # inputs = layers.Input(shape=(128, 128, 2))
-
+    
     # Conv Block 1
-    x = layers.Conv2D(64, (3, 3), padding='same', activation='relu')(Img)
-    x = layers.BatchNormalization()(x)
-    x = layers.Conv2D(64, (3, 3), padding='same', activation='relu')(x)
-    x = layers.BatchNormalization()(x)
-    x = layers.MaxPooling2D(pool_size=(2, 2), strides=2)(x) # Output: 64x64
+    conv1_1 = tf.layers.conv2d(Img, filters=64, kernel_size=3, padding='same', activation=tf.nn.relu, name='conv1_1')
+    conv1_1 = tf.layers.batch_normalization(conv1_1, training=True, name='bn1_1')
+    conv1_2 = tf.layers.conv2d(conv1_1, filters=64, kernel_size=3, padding='same', activation=tf.nn.relu, name='conv1_2')
+    conv1_2 = tf.layers.batch_normalization(conv1_2, training=True, name='bn1_2')
+    pool1 = tf.layers.max_pooling2d(conv1_2, pool_size=2, strides=2, name='pool1')
 
     # Conv Block 2
-    x = layers.Conv2D(64, (3, 3), padding='same', activation='relu')(x)
-    x = layers.BatchNormalization()(x)
-    x = layers.Conv2D(64, (3, 3), padding='same', activation='relu')(x)
-    x = layers.BatchNormalization()(x)
-    x = layers.MaxPooling2D(pool_size=(2, 2), strides=2)(x) # Output: 32x32
+    conv2_1 = tf.layers.conv2d(pool1, filters=64, kernel_size=3, padding='same', activation=tf.nn.relu, name='conv2_1')
+    conv2_1 = tf.layers.batch_normalization(conv2_1, training=True, name='bn2_1')
+    conv2_2 = tf.layers.conv2d(conv2_1, filters=64, kernel_size=3, padding='same', activation=tf.nn.relu, name='conv2_2')
+    conv2_2 = tf.layers.batch_normalization(conv2_2, training=True, name='bn2_2')
+    pool2 = tf.layers.max_pooling2d(conv2_2, pool_size=2, strides=2, name='pool2')
 
     # Conv Block 3
-    x = layers.Conv2D(128, (3, 3), padding='same', activation='relu')(x)
-    x = layers.BatchNormalization()(x)
-    x = layers.Conv2D(128, (3, 3), padding='same', activation='relu')(x)
-    x = layers.BatchNormalization()(x)
-    x = layers.MaxPooling2D(pool_size=(2, 2), strides=2)(x) # Output: 16x16
+    conv3_1 = tf.layers.conv2d(pool2, filters=128, kernel_size=3, padding='same', activation=tf.nn.relu, name='conv3_1')
+    conv3_1 = tf.layers.batch_normalization(conv3_1, training=True, name='bn3_1')
+    conv3_2 = tf.layers.conv2d(conv3_1, filters=128, kernel_size=3, padding='same', activation=tf.nn.relu, name='conv3_2')
+    conv3_2 = tf.layers.batch_normalization(conv3_2, training=True, name='bn3_2')
+    pool3 = tf.layers.max_pooling2d(conv3_2, pool_size=2, strides=2, name='pool3')
 
     # Conv Block 4
-    x = layers.Conv2D(128, (3, 3), padding='same', activation='relu')(x)
-    x = layers.BatchNormalization()(x)
-    x = layers.Conv2D(128, (3, 3), padding='same', activation='relu')(x)
-    x = layers.BatchNormalization()(x)
+    conv4_1 = tf.layers.conv2d(pool3, filters=128, kernel_size=3, padding='same', activation=tf.nn.relu, name='conv4_1')
+    conv4_1 = tf.layers.batch_normalization(conv4_1, training=True, name='bn4_1')
+    conv4_2 = tf.layers.conv2d(conv4_1, filters=128, kernel_size=3, padding='same', activation=tf.nn.relu, name='conv4_2')
+    conv4_2 = tf.layers.batch_normalization(conv4_2, training=True, name='bn4_2')
 
     # Fully Connected Layers
-    x = layers.Flatten()(x)
-    x = layers.Dropout(0.5)(x)
-    x = layers.Dense(1024, activation='relu')(x)
-    x = layers.Dropout(0.5)(x)
+    flat = tf.layers.flatten(conv4_2, name='flatten')
+    fc1 = tf.layers.dense(flat, units=1024, activation=tf.nn.relu, name='fc1')
+    drop1 = tf.layers.dropout(fc1, rate=0.5, training=True, name='dropout1')
+    fc2 = tf.layers.dense(drop1, units=1024, activation=tf.nn.relu, name='fc2')
+    drop2 = tf.layers.dropout(fc2, rate=0.5, training=True, name='dropout2')
 
-    # Output Layer
-    prLogits = layers.Dense(8, activation=None)(x) # The raw numbers
-    prSoftMax = layers.Activation('softmax')(prLogits) # Softmax applied to THOSE raw numbers
+    # Output Layer (8 homography values)
+    prLogits = tf.layers.dense(drop2, units=8, activation=None, name='output')
+    prSoftMax = prLogits
+    
     return prLogits, prSoftMax
-
-    # if mode == 'regression':
-    #     # 8 real-valued offsets (4 points * 2 coords)
-    #     outputs = layers.Dense(8, activation=None)(x)
-    # elif mode == 'classification':
-    #     # 168 outputs (8 variables * 21 quantization bins)
-    #     outputs = layers.Dense(168, activation='softmax')(x)
-    # else:
-    #     raise ValueError("Mode must be 'regression' or 'classification'")
-
-    # # model = models.Model(inputs=inputs, outputs=outputs, name=f"HomographyNet_{mode}")
-    # return outputs
-
-    # return H4Pt
 

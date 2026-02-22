@@ -17,7 +17,8 @@ University of Maryland, College Park
 # opencv, do (pip install opencv-python)
 # skimage, do (apt install python-skimage)
 
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
 import cv2
 import os
 import sys
@@ -32,7 +33,7 @@ import numpy as np
 import time
 import argparse
 import shutil
-from StringIO import StringIO
+from io import StringIO
 import string
 import math as m
 from tqdm import tqdm
