@@ -75,15 +75,17 @@ def main():
 		warped_image = cv.warpPerspective(image, homography, (width, height))
 		warped_patch = warped_image[corners[0, 1]:corners[2, 1], corners[0, 0]:corners[2, 0]]
 
+		#save patch_original and warped_patch
+		cv.imwrite(f'../Data/Patches/Original/{i+1}.jpg', patch_original)
+		cv.imwrite(f'../Data/Patches/Warped/{i+1}.jpg', warped_patch)
+
 
 
 
 		#save patch_original and warped_patch
 		corner_displacement = corners_perturbed - corners
-		stacked_images = np.concatenate((patch_original, warped_patch), axis=2)
+		# stacked_images = np.concatenate((patch_original, warped_patch), axis=2)
 		
-		output_path = f'/nfshomes/hw987/cmsc733_Vision/YourDirectoryID_p1/Phase2/Data/Patches/{i+1}.jpg'
-		cv.imwrite(output_path, stacked_images)
 		
 		label_values = corner_displacement.flatten()
 		labels_file.write(' '.join(map(str, label_values)) + '\n')

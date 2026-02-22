@@ -17,7 +17,8 @@ University of Maryland, College Park
 # skimage, do (apt install python-skimage)
 # termcolor, do (pip install termcolor)
 
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
 import cv2
 import sys
 import os
@@ -63,39 +64,46 @@ def GenerateBatch(BasePath, DirNamesTrain, TrainLabels, ImageSize, MiniBatchSize
     
     ImageNum = 0
     while ImageNum < MiniBatchSize:
-        # Generate random image
         RandIdx = random.randint(0, len(DirNamesTrain)-1)
         
-        RandImageName = BasePath + os.sep + DirNamesTrain[RandIdx] + '.jpg'   
+        OriginalImageName = BasePath + os.sep + 'Original' + os.sep + DirNamesTrain[RandIdx] + '.jpg'
+        WarpedImageName = BasePath + os.sep + 'Warped' + os.sep + DirNamesTrain[RandIdx] + '.jpg'
         ImageNum += 1
         
         ##########################################################
         # Add any standardization or data augmentation here!
         ##########################################################
 
-        I1 = np.float32(cv2.imread(RandImageName))
+        OriginalImg = np.float32(cv2.imread(OriginalImageName))
+        WarpedImg = np.float32(cv2.imread(WarpedImageName))
         
         # Standardization: normalize to [0, 1] range
-        I1 = I1 / 255.0
+        OriginalImg = OriginalImg / 255.0
+        WarpedImg = WarpedImg / 255.0
         
         # Data augmentation: random horizontal flip
         if random.random() > 0.5:
-            I1 = cv2.flip(I1, 1)
+            OriginalImg = cv2.flip(OriginalImg, 1)
+            WarpedImg = cv2.flip(WarpedImg, 1)
         
         # Data augmentation: random brightness adjustment
         brightness_factor = random.uniform(0.8, 1.2)
-        I1 = np.clip(I1 * brightness_factor, 0.0, 1.0)
+        OriginalImg = np.clip(OriginalImg * brightness_factor, 0.0, 1.0)
+        WarpedImg = np.clip(WarpedImg * brightness_factor, 0.0, 1.0)
         
         # Data augmentation: random rotation (small angle)
         if random.random() > 0.5:
             angle = random.uniform(-10, 10)
-            h, w = I1.shape[:2]
+            h, w = OriginalImg.shape[:2]
             M = cv2.getRotationMatrix2D((w/2, h/2), angle, 1.0)
-            I1 = cv2.warpAffine(I1, M, (w, h), borderMode=cv2.BORDER_REFLECT)
+            OriginalImg = cv2.warpAffine(OriginalImg, M, (w, h), borderMode=cv2.BORDER_REFLECT)
+            WarpedImg = cv2.warpAffine(WarpedImg, M, (w, h), borderMode=cv2.BORDER_REFLECT)
+        
+        # Stack Original and Warped images along channel dimension (3+3=6 channels)
+        I1 = np.concatenate([OriginalImg, WarpedImg], axis=2)
         
         Label = TrainLabels[RandIdx]
 
-        # Append All Images and Mask
         I1Batch.append(I1)
         LabelBatch.append(Label)
         
