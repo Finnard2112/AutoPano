@@ -1,0 +1,13 @@
+matplotlib
+
+numpy
+
+opencv-python
+
+Pillow
+
+tensorflow
+
+termcolor
+
+tqdm
