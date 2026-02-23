@@ -28,41 +28,41 @@ def HomographyModel(Img, ImageSize, MiniBatchSize):
     """
     
     # Conv Block 1
-    conv1_1 = tf.layers.conv2d(Img, filters=64, kernel_size=3, padding='same', activation=tf.nn.relu, name='conv1_1')
-    conv1_1 = tf.layers.batch_normalization(conv1_1, training=True, name='bn1_1')
-    conv1_2 = tf.layers.conv2d(conv1_1, filters=64, kernel_size=3, padding='same', activation=tf.nn.relu, name='conv1_2')
-    conv1_2 = tf.layers.batch_normalization(conv1_2, training=True, name='bn1_2')
-    pool1 = tf.layers.max_pooling2d(conv1_2, pool_size=2, strides=2, name='pool1')
+    conv1_1 = tf.keras.layers.Conv2D(64, 3, activation='relu', padding='same', name='conv1_1')(Img)
+    # conv1_1 = tf.keras.layers.BatchNormalization(name='bn1_1')(conv1_1)
+    conv1_2 = tf.keras.layers.Conv2D(64, 3, activation='relu', padding='same', name='conv1_2')(conv1_1)
+    # conv1_2 = tf.keras.layers.BatchNormalization(name='bn1_2')(conv1_2)
+    pool1 = tf.keras.layers.MaxPooling2D(2, 2, name='pool1')(conv1_2)
 
     # Conv Block 2
-    conv2_1 = tf.layers.conv2d(pool1, filters=64, kernel_size=3, padding='same', activation=tf.nn.relu, name='conv2_1')
-    conv2_1 = tf.layers.batch_normalization(conv2_1, training=True, name='bn2_1')
-    conv2_2 = tf.layers.conv2d(conv2_1, filters=64, kernel_size=3, padding='same', activation=tf.nn.relu, name='conv2_2')
-    conv2_2 = tf.layers.batch_normalization(conv2_2, training=True, name='bn2_2')
-    pool2 = tf.layers.max_pooling2d(conv2_2, pool_size=2, strides=2, name='pool2')
+    conv2_1 = tf.keras.layers.Conv2D(64, 3, activation='relu', padding='same', name='conv2_1')(pool1)
+    # conv2_1 = tf.keras.layers.BatchNormalization(name='bn2_1')(conv2_1)
+    conv2_2 = tf.keras.layers.Conv2D(64, 3, activation='relu', padding='same', name='conv2_2')(conv2_1)
+    # conv2_2 = tf.keras.layers.BatchNormalization(name='bn2_2')(conv2_2)
+    pool2 = tf.keras.layers.MaxPooling2D(2, 2, name='pool2')(conv2_2)
 
     # Conv Block 3
-    conv3_1 = tf.layers.conv2d(pool2, filters=128, kernel_size=3, padding='same', activation=tf.nn.relu, name='conv3_1')
-    conv3_1 = tf.layers.batch_normalization(conv3_1, training=True, name='bn3_1')
-    conv3_2 = tf.layers.conv2d(conv3_1, filters=128, kernel_size=3, padding='same', activation=tf.nn.relu, name='conv3_2')
-    conv3_2 = tf.layers.batch_normalization(conv3_2, training=True, name='bn3_2')
-    pool3 = tf.layers.max_pooling2d(conv3_2, pool_size=2, strides=2, name='pool3')
+    conv3_1 = tf.keras.layers.Conv2D(128, 3, activation='relu', padding='same', name='conv3_1')(pool2)
+    # conv3_1 = tf.keras.layers.BatchNormalization(name='bn3_1')(conv3_1)
+    conv3_2 = tf.keras.layers.Conv2D(128, 3, activation='relu', padding='same', name='conv3_2')(conv3_1)
+    # conv3_2 = tf.keras.layers.BatchNormalization(name='bn3_2')(conv3_2)
+    pool3 = tf.keras.layers.MaxPooling2D(2, 2, name='pool3')(conv3_2)
 
     # Conv Block 4
-    conv4_1 = tf.layers.conv2d(pool3, filters=128, kernel_size=3, padding='same', activation=tf.nn.relu, name='conv4_1')
-    conv4_1 = tf.layers.batch_normalization(conv4_1, training=True, name='bn4_1')
-    conv4_2 = tf.layers.conv2d(conv4_1, filters=128, kernel_size=3, padding='same', activation=tf.nn.relu, name='conv4_2')
-    conv4_2 = tf.layers.batch_normalization(conv4_2, training=True, name='bn4_2')
+    conv4_1 = tf.keras.layers.Conv2D(128, 3, activation='relu', padding='same', name='conv4_1')(pool3)
+    # conv4_1 = tf.keras.layers.BatchNormalization(name='bn4_1')(conv4_1)
+    conv4_2 = tf.keras.layers.Conv2D(128, 3, activation='relu', padding='same', name='conv4_2')(conv4_1)
+    # conv4_2 = tf.keras.layers.BatchNormalization(name='bn4_2')(conv4_2)
 
     # Fully Connected Layers
-    flat = tf.layers.flatten(conv4_2, name='flatten')
-    fc1 = tf.layers.dense(flat, units=1024, activation=tf.nn.relu, name='fc1')
-    drop1 = tf.layers.dropout(fc1, rate=0.5, training=True, name='dropout1')
-    fc2 = tf.layers.dense(drop1, units=1024, activation=tf.nn.relu, name='fc2')
-    drop2 = tf.layers.dropout(fc2, rate=0.5, training=True, name='dropout2')
+    flat = tf.keras.layers.Flatten(name='flatten')(conv4_2)
+    fc1 = tf.keras.layers.Dense(1024, activation='relu', name='fc1')(flat)
+    drop1 = tf.keras.layers.Dropout(0.5, name='dropout1')(fc1)
+    fc2 = tf.keras.layers.Dense(1024, activation='relu', name='fc2')(drop1)
+    drop2 = tf.keras.layers.Dropout(0.5, name='dropout2')(fc2)
 
     # Output Layer (8 homography values)
-    prLogits = tf.layers.dense(drop2, units=8, activation=None, name='output')
+    prLogits = tf.keras.layers.Dense(8, activation=None, name='output')(drop2)
     prSoftMax = prLogits
     
     return prLogits, prSoftMax

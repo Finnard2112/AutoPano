@@ -162,8 +162,7 @@ def TrainOperation(ImgPH, LabelPH, DirNamesTrain, TrainLabels, NumTrainSamples, 
         # Fill your optimizer of choice here!
         ###############################################
         # AdamW optimizer with weight decay
-        Optimizer = tf.contrib.opt.AdamWOptimizer(weight_decay=0.0001, learning_rate=1e-4).minimize(loss)
-
+        Optimizer = tf.train.AdamOptimizer(learning_rate=1e-4).minimize(loss)
     # Tensorboard
     # Create a summary to monitor loss tensor
     tf.summary.scalar('LossEveryIter', loss)

@@ -24,3 +24,4 @@ Logs/
 .DS_Store
 Thumbs.db
 TxtFiles/LabelsTrain.txt
+quick_training_check.py
