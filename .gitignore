@@ -1,5 +1,8 @@
-
-
+Phase1/*
+Draft/*
+Phase2/Data/*
+Phase2/Checkpoints/*
+Phase2/Code/TxtFiles/*
 
 # Ignore Python cache files
 __pycache__/
@@ -23,5 +26,3 @@ Logs/
 # Ignore OS files
 .DS_Store
 Thumbs.db
-TxtFiles/LabelsTrain.txt
-quick_training_check.py
