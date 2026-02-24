@@ -320,28 +320,21 @@
 % not capitalized unless they are the first or last word of the title.
 % Linebreaks \\ can be used within to get better formatting as desired.
 % Do not put math or special symbols in the title.
-\title{Bare Demo of IEEEtran.cls\\ for IEEE Conferences}
+\title{CMSC733 Project 1: MyAutoPano}
 
 
 % author names and affiliations
 % use a multiple column layout for up to three different
 % affiliations
-\author{\IEEEauthorblockN{Michael Shell}
-\IEEEauthorblockA{School of Electrical and\\Computer Engineering\\
-Georgia Institute of Technology\\
-Atlanta, Georgia 30332--0250\\
-Email: http://www.michaelshell.org/contact.html}
+\author{\IEEEauthorblockN{Ha Phan Nguyen}
+\IEEEauthorblockA{
+University of Maryland, College Park\\
+Email: phan2003@umd.edu}
 \and
-\IEEEauthorblockN{Homer Simpson}
-\IEEEauthorblockA{Twentieth Century Fox\\
-Springfield, USA\\
-Email: homer@thesimpsons.com}
-\and
-\IEEEauthorblockN{James Kirk\\ and Montgomery Scott}
-\IEEEauthorblockA{Starfleet Academy\\
-San Francisco, California 96678--2391\\
-Telephone: (800) 555--1212\\
-Fax: (888) 555--1212}}
+\IEEEauthorblockN{Hengyi Wu}
+\IEEEauthorblockA{University of Maryland, College Park\\
+Email: hw987@umd.edu}
+}
 
 % conference papers do not typically use \thanks and this command
 % is locked out in conference mode. If really needed, such as for
@@ -380,7 +373,13 @@ Fax: (888) 555--1212}}
 % As a general rule, do not put math, special symbols or citations
 % in the abstract
 \begin{abstract}
-The abstract goes here.
+This report goes over the various panorama stitching techniques 
+discussed in the course project. We go over the methodology, 
+ideas, and implementation of stitching techniques. In phase 1,
+we use a traditional feature-matching approach to stitching. In
+Phase 2, we implement supervised and unsupervised deep learning
+ approaches to estimate the homography between two images and
+ blend them.
 \end{abstract}
 
 % no keywords
