@@ -1,3 +1,5 @@
+/Phase2/Data/
+*.zip
 Phase1/Data/*
 Phase2/Data/*
 Phase2/Checkpoints/*
