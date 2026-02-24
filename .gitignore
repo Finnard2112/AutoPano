@@ -1,9 +1,12 @@
 /Phase2/Data/
 *.zip
 Phase1/Data/*
+Phase1/Output/*
 Phase2/Data/*
 Phase2/Checkpoints/*
 Phase2/Code/TxtFiles/*
+
+*.md
 
 # Ignore Python cache files
 __pycache__/
@@ -27,3 +30,4 @@ Logs/
 # Ignore OS files
 .DS_Store
 Thumbs.db
+
