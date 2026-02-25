@@ -21,10 +21,12 @@ import numpy as np
 import cv2 as cv
 # Add any python libraries here
 import os
-import helper
 from matplotlib import pyplot as plt
 from skimage.feature import peak_local_max
 import argparse
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
+from Network.Network import HomographyModel
 
 
 
@@ -40,7 +42,7 @@ def main():
 	Read a set of images for Panorama stitching
 	"""
 	Parser = argparse.ArgumentParser()
-	Parser.add_argument('--imgpath', default="../Data/Train/Set1", help='Include the image path')
+	Parser.add_argument('--imgpath', default="../../Phase1/Data/Train/Set1", help='Include the image path')
 	Args = Parser.parse_args()
 	imgpath = Args.imgpath
 
@@ -74,25 +76,69 @@ def main():
 	ratio_thresh = 0.9 #0.9 for dataset 2
 	
 	"""
-	Obtain Homography using Deep Learning Model (Supervised and Unsupervised)
+	Obtain Homography using Deep Learning Model (Supervised)
 	"""
-	for i in range(len(images) - 1):
-		patch1, patch2 = get_patches(images[i], images[i+1]) 
+	num_images = len(images)
+	ref_idx = num_images // 2
+	
+	# Load the trained model
+	tf.reset_default_graph()
+	ImageSize = [128, 128, 6]
+	MiniBatchSize = 1
+	
+	ImgPH = tf.placeholder(tf.float32, shape=(MiniBatchSize, ImageSize[0], ImageSize[1], ImageSize[2]))
+	prLogits, prSoftMax = HomographyModel(ImgPH, ImageSize, MiniBatchSize)
+	
+	Saver = tf.train.Saver()
+	
+	with tf.Session() as sess:
+		Saver.restore(sess, "../Checkpoints/49model.ckpt")
 		
-		# Your model prediction (e.g., HomographyNet or similar)
-		# This replaces the entire Corner/ANMS/Matching/RANSAC block
-		H_predicted = model.predict(patch1, patch2) 
-		
-		homographies.append(H_predicted)
+		# Compute homographies between consecutive images
+		for i in range(num_images - 1):
+			# Resize images to 128x128
+			img1_resized = cv.resize(images[i], (128, 128))
+			img2_resized = cv.resize(images[i+1], (128, 128))
+			
+			# Stack images (reference first, then image to warp)
+			stacked_img = np.dstack([img1_resized, img2_resized]) 
+			stacked_img = np.expand_dims(stacked_img, axis=0).astype(np.float32) / 255.0
+
+			# --- Sanity Check: Save to Disk ---
+			# 1. Ensure a directory exists for these checks
+			debug_dir = "../Debug_Inference"
+			if not os.path.exists(debug_dir):
+				os.makedirs(debug_dir)
+
+			# 2. Extract the two images from the 6-channel stack
+			# Input shape is (1, 128, 128, 6)
+			check_img = (np.squeeze(stacked_img) * 255.0).astype(np.uint8)
+			img1_view = check_img[:, :, 0:3] # First 3 channels
+			img2_view = check_img[:, :, 3:6] # Last 3 channels
+
+			# 3. Stack them horizontally for easy viewing
+			side_by_side = np.hstack((img1_view, img2_view))
+
+			# 4. Save with index (i is your loop variable)
+			debug_filename = os.path.join(debug_dir, f"input_pair_{i:03d}.png")
+			cv.imwrite(debug_filename, side_by_side)
+			# ----------------------------------
+			
+			# Run inference
+			H_4pt = sess.run(prSoftMax, feed_dict={ImgPH: stacked_img})
+			H_4pt = H_4pt.reshape((4, 2))
+			
+			# Convert 4-point homography to 3x3 matrix
+			pts_src = np.float32([[0, 0], [128, 0], [128, 128], [0, 128]])
+			pts_dst = pts_src + H_4pt
+			H = cv.getPerspectiveTransform(pts_src, pts_dst)
+			
+			homographies.append(H)
 	
 	"""
 	Image Warping + Blending
 	Save Panorama output as mypano.png
 	"""
-
-	# Determine the middle image 
-	num_images = len(images)
-	ref_idx = num_images // 2
 	
 	H_global = [None] * num_images
 	H_global[ref_idx] = np.eye(3)
@@ -160,6 +206,15 @@ def main():
 	for i in range(num_linked_images):
 		H_final = H_translation.dot(H_global[i])
 		warped_img = cv.warpPerspective(images[i], H_final, (canvas_w, canvas_h))
+
+		# --- NEW: Save each warped image to disk ---
+		warped_debug_dir = "../Warped_Steps"
+		if not os.path.exists(warped_debug_dir):
+			os.makedirs(warped_debug_dir)
+		
+		warped_filename = os.path.join(warped_debug_dir, f"warped_img_{i:03d}.png")
+		cv.imwrite(warped_filename, warped_img)
+		# -------------------------------------------
 
 		gray_warped = cv.cvtColor(warped_img, cv.COLOR_BGR2GRAY)
 		current_mask = gray_warped > 0
