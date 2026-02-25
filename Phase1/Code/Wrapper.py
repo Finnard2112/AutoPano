@@ -17,6 +17,7 @@ University of Maryland, College Park
 
 # Code starts here:
 import os
+import gc
 import helper
 import numpy as np
 import cv2 as cv
@@ -44,11 +45,18 @@ def main():
 	images = []
 	for file in files:
 		img = cv.imread(file)
+
+		# Resize
 		max_width = 800
 		if img.shape[1] > max_width:
 			scale = max_width / img.shape[1]
 			img = cv.resize(img, (int(img.shape[1] * scale), int(img.shape[0] * scale)))
-		images.append(img)
+
+		# Cylindrical projection
+		h, w = img.shape[:2]
+		f = w * 1.0
+		cylindrical_img = helper.cylindrical_warp(img, f)
+		images.append(cylindrical_img)
 
 	C_imgs = []
 	all_features = []
@@ -56,11 +64,12 @@ def main():
 	all_y_best = []
 	all_matches = []
 	homographies = []
+	valid_image_indices = [] 
 
 
 	# Change these parameters for feature matching. 
 	
-	N_best = 2500 #2500 for dataset 2
+	N_best = 3000 #2500 for dataset 2
 	ratio_thresh = 0.9 #0.9 for dataset 2
 
 	"""
@@ -119,28 +128,39 @@ def main():
 	Save Feature Matching output as matching.png
 	"""
 
-	for i in range(len(images) - 1):
-		img1 = images[i]
-		img2 = images[i+1]
-		
-		f1, f2 = all_features[i], all_features[i+1]
-		x1, y1 = all_x_best[i], all_y_best[i]
-		x2, y2 = all_x_best[i+1], all_y_best[i+1]
+	MIN_INLIERS = 60 
+	anchor_idx = 0
+	
+	for next_idx in range(1, len(images)):
+		f1, f2 = all_features[anchor_idx], all_features[next_idx]
+		x1, y1 = all_x_best[anchor_idx], all_y_best[anchor_idx]
+		x2, y2 = all_x_best[next_idx], all_y_best[next_idx]
 		
 		# Perform matching
 		kp1, kp2, good_matches = helper.match_features(f1, f2, x1, y1, x2, y2, ratio_thresh=ratio_thresh)
-
 		print(len(good_matches))
 
-		if len(good_matches) < 4:
+		H, inlier_matches = (None, [])
+		
+		if len(good_matches) >= MIN_INLIERS:
+			H, inlier_matches = helper.apply_ransac(good_matches, kp1, kp2, N_max=4000, tau=2.0)
+		
+		if len(inlier_matches) < MIN_INLIERS:
+			print(f"Skipping Image {next_idx}. Not enough inliers {len(inlier_matches)}")
+			
+			if len(valid_image_indices) == 0:
+				anchor_idx = next_idx
+			
 			continue
 
-		H, inlier_matches = helper.apply_ransac(good_matches, kp1, kp2, N_max=2000, tau=5.0)
-		
+		if len(valid_image_indices) == 0:
+			valid_image_indices.append(anchor_idx)
+			
+		valid_image_indices.append(next_idx)
 		homographies.append(H)
 		all_matches.append((kp1, kp2, good_matches))
 		
-		# Draw only the good matches
+		img1, img2 = images[anchor_idx], images[next_idx]
 		match_img = cv.drawMatches(
 			img1, kp1, 
 			img2, kp2, 
@@ -149,7 +169,6 @@ def main():
 			flags=cv.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS
 		)
 
-		# Draw good matches post-RANSAC
 		ransac_img = cv.drawMatches(
 			img1, kp1, 
 			img2, kp2, 
@@ -157,12 +176,15 @@ def main():
 			None, 
 			flags=cv.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS
 		)
-		
 
-		save_path = os.path.join("../Output", f"ransac_{i}_to_{i+1}.png")
+		save_path = os.path.join("../Output", f"ransac_{anchor_idx}_to_{next_idx}.png")
 		cv.imwrite(save_path, ransac_img)
-		save_path = os.path.join("../Output", f"matching_{i}_to_{i+1}.png")
+		save_path = os.path.join("../Output", f"matching_{anchor_idx}_to_{next_idx}.png")
 		cv.imwrite(save_path, match_img)
+		
+		anchor_idx = next_idx
+
+	images = [images[idx] for idx in valid_image_indices]
 
 	"""
 	Image Warping + Blending
@@ -235,29 +257,45 @@ def main():
 
 	global_mask = np.zeros((canvas_h, canvas_w), dtype=bool)
 
-	# 4. Warp and blend 
+	# Warp and blend using Distance Transform 
+	
+	# output_pano_float needs 3 channels for BGR
+	output_pano_float = np.zeros((canvas_h, canvas_w, 3), dtype=np.float32)
+	weight_pano = np.zeros((canvas_h, canvas_w, 1), dtype=np.float32)
+
 	for i in range(num_linked_images):
 		H_final = H_translation.dot(H_global[i])
 		warped_img = cv.warpPerspective(images[i], H_final, (canvas_w, canvas_h))
 
 		gray_warped = cv.cvtColor(warped_img, cv.COLOR_BGR2GRAY)
-		current_mask = gray_warped > 0
+		_, binary_mask = cv.threshold(gray_warped, 0, 255, cv.THRESH_BINARY)
 
-		# Add non-overlapping regions
-		new_pixels_mask = current_mask & ~global_mask
-		output_pano[new_pixels_mask] = warped_img[new_pixels_mask]
+		dist_transform = cv.distanceTransform(binary_mask, cv.DIST_L2, 3)
 
-		# Average the overlapping region
-		overlap = current_mask & global_mask
-		
-		pano_overlap = output_pano[overlap].astype(np.uint16)
-		warp_overlap = warped_img[overlap].astype(np.uint16)
-		output_pano[overlap] = ((pano_overlap + warp_overlap) // 2).astype(output_pano.dtype)
+		max_dist = dist_transform.max()
+		if max_dist > 0:
+			dist_transform = dist_transform / max_dist
 
-		# Update the global tracking mask
-		global_mask |= current_mask
+		# Reshape to (H, W, 1) to use NumPy broadcasting instead of cv.merge
+		alpha_mask = dist_transform[:, :, np.newaxis].astype(np.float32)
+		output_pano_float += warped_img.astype(np.float32) * alpha_mask
+		weight_pano += alpha_mask
 
-		del warped_img, gray_warped, current_mask, new_pixels_mask, overlap, pano_overlap, warp_overlap
+		# Force garbage collection
+		del warped_img, gray_warped, binary_mask, dist_transform, alpha_mask
+		gc.collect()
+
+	# Avoid division by zero in empty areas
+	weight_pano[weight_pano == 0] = 1.0
+
+	# The 1-channel weight_pano broadcasts perfectly across the 3-channel output array
+	output_pano_float /= weight_pano
+
+	output_pano = np.clip(output_pano_float, 0, 255).astype(np.uint8)
+	
+	# Free up the massive float arrays before saving
+	del output_pano_float, weight_pano
+	gc.collect()
 
 	cv.imwrite(os.path.join("../Output", "mypano.png"), output_pano)
 

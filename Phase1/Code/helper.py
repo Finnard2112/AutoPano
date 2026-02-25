@@ -151,3 +151,24 @@ def apply_ransac(matches, kp1, kp2, N_max=2000, tau=5.0):
     inlier_matches = [matches[i] for i in best_inliers_idx]
     
     return final_H, inlier_matches
+
+def cylindrical_warp(img, focal_length):
+    h, w = img.shape[:2]
+    x_c = w / 2.0
+    y_c = h / 2.0
+
+    x_cyl, y_cyl = np.meshgrid(np.arange(w), np.arange(h))
+
+    theta = (x_cyl - x_c) / focal_length
+
+    # Inverse mapping
+    x_flat = focal_length * np.tan(theta) + x_c
+    y_flat = (y_cyl - y_c) / np.cos(theta) + y_c
+
+    map_x = x_flat.astype(np.float32)
+    map_y = y_flat.astype(np.float32)
+
+    # remap
+    warped_img = cv.remap(img, map_x, map_y, interpolation=cv.INTER_LINEAR, borderMode=cv.BORDER_CONSTANT)
+
+    return warped_img
