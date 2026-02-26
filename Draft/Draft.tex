@@ -310,7 +310,8 @@
 
 % correct bad hyphenation here
 \hyphenation{op-tical net-works semi-conduc-tor}
-
+\usepackage{graphicx}
+\graphicspath{ {./draft_outputs/} }
 
 \begin{document}
 %
@@ -399,25 +400,207 @@ Phase 2, we implement supervised and unsupervised deep learning
 
 
 
-\section{Introduction}
-% no \IEEEPARstart
-This demo file is intended to serve as a ``starter file''
-for IEEE conference papers produced under \LaTeX\ using
-IEEEtran.cls version 1.8b and later.
-% You must have at least 2 lines in the paragraph with the drop letter
-% (should never be an issue)
-I wish you the best of success.
+\section{Phase 1}
 
-\hfill mds
- 
-\hfill August 26, 2015
+In this implementation, we first resize the input images down to a maximum width of 
+800 pixels as an optimization for memory. Each image is then projected on a cylinder
+using an estimated focal length. Then, we used Harris Corner to get corners of all
+images and then select 3000 best corners that are uniformly distributed. We then 
+extracted the feature locations to feature vectors according to the project's 
+specifications, and then compared these vectors to adjacent images to get the best
+match distances. We then calculate the homography matrix next and then test this 
+matrix against all other matches, keeping the transformation that yields the 
+highest number of inliers. We then use the middle image as the reference then chain
+all other homography matrices to map images onto the middle image. We do alpha blending
+to smooth the images.
 
-\subsection{Subsection Heading Here}
-Subsection text here.
+\subsection{Preprocessing}
+We begin preprocessing by reading the images and resizing them 
+so their maximum width is capped at 800 pixels, scaling the height proportionally 
+to optimize for memory. After resizing, the images undergo cylindrical 
+projection via the helper.cylindrical\_warp function. This function approximates 
+the camera's focal length as the image's width and performs an inverse mapping 
+technique. It calculates where each pixel on a 2D plane would mathematically 
+sit on a cylinder using tangent and cosine functions, and then reconstructs 
+the warped image using OpenCV's remap function. This is needed to avoid extreme
+distortions in cases where a multitude of images need to be stitched.
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\linewidth]{set3_feather.png}
+\caption{Stitching without cylindrical warp.}
+\label{fig_example}
+\end{figure}
+
+\subsection{Corner Detection}
+Corner detection is implemented using OpenCV's Harris Corner method. This function computes a corner 
+response score for each pixel, utilizing a neighborhood block size of 2, a Sobel 
+derivative kernel size of 3, and a Harris free parameter of 0.04. For visualization, 
+pixels that have a response core exceeding 1\% of the maximum score in the image are 
+isolated, highlighted in red on a copy of the original image, and saved to the output 
+directory.
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\linewidth]{corners_1.jpg}
+\caption{Corner locations image by the Harris Corner function}
+\label{fig_example}
+\end{figure}
 
 
-\subsubsection{Subsubsection Heading Here}
-Subsubsection text here.
+\subsection{AMNS}
+The ANMS step takes the Harris corners and identifying local maxima using the 
+peak\_local\_max function to gather a baseline set of strong corner candidates. For each 
+candidate, the algorithm calculates the minimum Euclidean distance to any other corner 
+that has a strictly higher response score. By sorting these radii in 
+descending order and selecting the top N\_best points, this prevents the algorithm 
+from clustering all its keypoints in a single highly textured region, which is important 
+for later image stitching.
+
+\subsection{Feature Descriptors and Matching}
+The code iterates through the ANMS keypoints and extracts a 40x40 pixel patch around 
+each point. We then uses reflection padding to handle points near the edges. Each patch 
+is then smoothed with Gaussian blur and sub-sampled. Finally, the resulting grid is flattened 
+into a 64-dimensional vector and standardized to have a mean of zero and a variance of 
+one.
+Each feature vector is compared between images using SSD. For a given feature 
+in the first image, the algorithm computes the SSD against all features in the second 
+image to find the absolute closest and second-closest matches. A match is only accepted if the 
+distance to the best match is less than the value ratio\_thresh of the distance to the 
+second-best match. 
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\linewidth]{anms_1.jpg}
+\caption{Choosing N\_best corners using AMNS}
+\label{fig_example2}
+\end{figure}
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\linewidth]{matching.png}
+\caption{Matching features between images}
+\label{fig_example2}
+\end{figure}
+
+\subsection{RANSAC}
+RANSAC is used to find the best homography from one image to another.
+Through a number of iterations, we randomly select four pairs of matched keypoints and 
+calculates a Homography matrix, based on these points. The algorithm then applies this 
+matrix to all the matched points from the first image,  projecting them into the 
+coordinate space of the second image. It calculates the SSD 
+between newly projected coordinates and their actual matched locations. If the 
+distance is below a fixed value named tau, the pair is classified as inliers.
+
+After testing a large number of matrices, the algorithm identifies the matrix that produced 
+the largest consensus set of inlier pairs. Then, all outliers are discarded and we
+recalculate an optimized Homography matrix using cv.findHomography on every 
+single verified inlier.
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\linewidth]{ransac.png}
+\caption{Eliminating bad feature pairs and calculate homography using RANSAC }
+\label{fig_example2}
+\end{figure}
+
+\subsection{Warping and Blending}
+The middle image of the sequence is chosen as the fixed reference frame. We then chain 
+the pairwise homography matrices together to compute a global homography for every other 
+image. Next, it calculates the outer bounding box of all these transformed images to 
+determine the final canvas size and creates a global translation matrix to shift everything 
+into correct coordinates.
+
+To stitch overlapping regions, we use a Distance Transform blending technique. 
+For every warped image, it generates a binary mask and calculates how 
+far each pixel is from the image's boundary.  These distances are normalized and used as 
+alpha weights. Pixels near the center of an original image stay in the panorama, while pixels 
+near the edges fade out. All the weighted images are accumulated into a floating-point array 
+and then divided by the total weight map to produce the blended panorama.
+
+The Poisson Blending technique was considered, but the final output became much darker
+than the original images.
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\linewidth]{set3_feather_cylindrical.png}
+\caption{Final panorama with cylindrical warp of train set 3.}
+\label{fig_example}
+\end{figure}
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\linewidth]{set3_poisson_mypano.png}
+\caption{Poisson blending darkens the final panorama}
+\label{fig_example}
+\end{figure}
+
+\subsection{Handling low/no overlap}
+At the start of feature matching, we defined a hard threshold where for two images to be 
+considered overlapping, they must share at least a fixed number of inliers from RANSAC to be 
+considered in the final panorama. This is set to 60 as a default.
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\linewidth]{testset1.png}
+\caption{Test set 1}
+\label{fig_example}
+
+\end{figure}
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\linewidth]{testset2.png}
+\caption{Test set 2}
+\label{fig_example}
+\end{figure}
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\linewidth]{testset3.png}
+\caption{Test set 3}
+\label{fig_example}
+\end{figure}
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\linewidth]{testset4.png}
+\caption{Test set 4}
+\label{fig_example}
+\end{figure}
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\linewidth]{set1_feather.png}
+\caption{Train set 1}
+\label{fig_example}
+\end{figure}
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\linewidth]{set2_feather.png}
+\caption{Train set 2}
+\label{fig_example}
+\end{figure}
+
+\subsection{Comments on final panoramas}
+The final result panoramas are shown in Figure 6 and Figures 8 - 13.
+
+Notice that some of the best stitching results are for test set 3,
+train set 2, train set 1, and train set 3. These image sets share high density of good features 
+that are distinct and non-repeating. There's also consistent brightness and contrast 
+across the individual frames. Most of these have very nice overlap in the 30-50\% range.
+
+We got a nice panorama from stitching the images of set 2, but images 5,6,9 in the set were cut out 
+since they shared too little overlap with the reference middle image. We could fix this by 
+carefully selecting the middle image or rearranging the order of the images.
+
+We successfully ignored unrelated images in test set 4 due to rejecting images with too 
+few inliers with the middle image, which happened to be in the scene that we want. We could 
+have generated something worse if the middle image wasn't chosen correctly.
+
+The checkerboard pattern in test set 1 has many similar-looking features due to the 
+repetitiveness of the pattern. This causes the SSD ratio test to fail because the best 
+match and second-best match look exactly the same, leading to sub-optimal alignment. 
 
 
 % An example of a floating figure using the graphicx package.

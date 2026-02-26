@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2025.4.11)  24 FEB 2026 11:14
+This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2025.4.11)  26 FEB 2026 03:14
 entering extended mode
  \write18 enabled.
  file:line:error style messages enabled.
@@ -103,36 +103,195 @@ LaTeX Font Info:    Font shape `OT1/ptm/bx/it' in size <24> not available
 \IEEEPARstartletwidth=\dimen169
 \c@IEEEbiography=\count277
 \@IEEEtranrubishbin=\box54
+) (/usr/local/texlive/2025/texmf-dist/tex/latex/graphics/graphicx.sty
+Package: graphicx 2021/09/16 v1.2d Enhanced LaTeX Graphics (DPC,SPQR)
+ (/usr/local/texlive/2025/texmf-dist/tex/latex/graphics/keyval.sty
+Package: keyval 2022/05/29 v1.15 key=value parser (DPC)
+\KV@toks@=\toks18
+) (/usr/local/texlive/2025/texmf-dist/tex/latex/graphics/graphics.sty
+Package: graphics 2024/08/06 v1.4g Standard LaTeX Graphics (DPC,SPQR)
+ (/usr/local/texlive/2025/texmf-dist/tex/latex/graphics/trig.sty
+Package: trig 2023/12/02 v1.11 sin cos tan (DPC)
+) (/usr/local/texlive/2025/texmf-dist/tex/latex/graphics-cfg/graphics.cfg
+File: graphics.cfg 2016/06/04 v1.11 sample graphics configuration
+)
+Package graphics Info: Driver file: pdftex.def on input line 106.
+ (/usr/local/texlive/2025/texmf-dist/tex/latex/graphics-def/pdftex.def
+File: pdftex.def 2024/04/13 v1.2c Graphics/color driver for pdftex
+))
+\Gin@req@height=\dimen170
+\Gin@req@width=\dimen171
 ) (/usr/local/texlive/2025/texmf-dist/tex/latex/l3backend/l3backend-pdftex.def
 File: l3backend-pdftex.def 2025-03-14 L3 backend support: PDF output (pdfTeX)
 \l__color_backend_stack_int=\count278
-) (./Draft.aux)
+) (./Draft.aux
+
+LaTeX Warning: Label `fig_example' multiply defined.
+
+
+LaTeX Warning: Label `fig_example2' multiply defined.
+
+
+LaTeX Warning: Label `fig_example2' multiply defined.
+
+
+LaTeX Warning: Label `fig_example' multiply defined.
+
+
+LaTeX Warning: Label `fig_example' multiply defined.
+
+
+LaTeX Warning: Label `fig_example' multiply defined.
+
+
+LaTeX Warning: Label `fig_example' multiply defined.
+
+
+LaTeX Warning: Label `fig_example' multiply defined.
+
+
+LaTeX Warning: Label `fig_example' multiply defined.
+
+
+LaTeX Warning: Label `fig_example' multiply defined.
+
+
+LaTeX Warning: Label `fig_example' multiply defined.
+
+)
 \openout1 = `Draft.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 315.
-LaTeX Font Info:    ... okay on input line 315.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 315.
-LaTeX Font Info:    ... okay on input line 315.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 315.
-LaTeX Font Info:    ... okay on input line 315.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 315.
-LaTeX Font Info:    ... okay on input line 315.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 315.
-LaTeX Font Info:    ... okay on input line 315.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 315.
-LaTeX Font Info:    ... okay on input line 315.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 315.
-LaTeX Font Info:    ... okay on input line 315.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 316.
+LaTeX Font Info:    ... okay on input line 316.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 316.
+LaTeX Font Info:    ... okay on input line 316.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 316.
+LaTeX Font Info:    ... okay on input line 316.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 316.
+LaTeX Font Info:    ... okay on input line 316.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 316.
+LaTeX Font Info:    ... okay on input line 316.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 316.
+LaTeX Font Info:    ... okay on input line 316.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 316.
+LaTeX Font Info:    ... okay on input line 316.
 
 -- Lines per column: 56 (exact).
+(/usr/local/texlive/2025/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
+[Loading MPS to PDF converter (version 2006.09.02).]
+\scratchcounter=\count279
+\scratchdimen=\dimen172
+\scratchbox=\box55
+\nofMPsegments=\count280
+\nofMParguments=\count281
+\everyMPshowfont=\toks19
+\MPscratchCnt=\count282
+\MPscratchDim=\dimen173
+\MPnumerator=\count283
+\makeMPintoPDFobject=\count284
+\everyMPtoPDFconversion=\toks20
+) (/usr/local/texlive/2025/texmf-dist/tex/latex/epstopdf-pkg/epstopdf-base.sty
+Package: epstopdf-base 2020-01-24 v2.11 Base part for package epstopdf
+Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 485.
+ (/usr/local/texlive/2025/texmf-dist/tex/latex/latexconfig/epstopdf-sys.cfg
+File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Live
+))
+<./draft_outputs/set3_feather.png, id=1, 5769.555pt x 4778.85374pt>
+File: ./draft_outputs/set3_feather.png Graphic file (type png)
+<use ./draft_outputs/set3_feather.png>
+Package pdftex.def Info: ./draft_outputs/set3_feather.png  used on input line 430.
+(pdftex.def)             Requested size: 252.0pt x 208.69516pt.
+<./draft_outputs/corners_1.jpg, id=2, 542.025pt x 595.47469pt>
+File: ./draft_outputs/corners_1.jpg Graphic file (type jpg)
+<use ./draft_outputs/corners_1.jpg>
+Package pdftex.def Info: ./draft_outputs/corners_1.jpg  used on input line 445.
+(pdftex.def)             Requested size: 252.0pt x 276.84743pt.
+
+
+<./draft_outputs/anms_1.jpg, id=3, 542.025pt x 592.46344pt>
+File: ./draft_outputs/anms_1.jpg Graphic file (type jpg)
+<use ./draft_outputs/anms_1.jpg>
+Package pdftex.def Info: ./draft_outputs/anms_1.jpg  used on input line 474.
+(pdftex.def)             Requested size: 252.0pt x 275.44745pt.
+<./draft_outputs/matching.png, id=4, 1214.5375pt x 810.02625pt>
+File: ./draft_outputs/matching.png Graphic file (type png)
+<use ./draft_outputs/matching.png>
+Package pdftex.def Info: ./draft_outputs/matching.png  used on input line 481.
+(pdftex.def)             Requested size: 252.0pt x 168.05876pt.
+
+
+[1{/usr/local/texlive/2025/texmf-var/fonts/map/pdftex/updmap/pdftex.map}{/usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/base/8r.enc}
+
+
+ <./draft_outputs/set3_feather.png (PNG copy)>]
+
+<./draft_outputs/ransac.png, id=14, 1214.5375pt x 810.02625pt>
+File: ./draft_outputs/ransac.png Graphic file (type png)
+<use ./draft_outputs/ransac.png>
+Package pdftex.def Info: ./draft_outputs/ransac.png  used on input line 502.
+(pdftex.def)             Requested size: 252.0pt x 168.05876pt.
+
+
+[2 <./draft_outputs/corners_1.jpg> <./draft_outputs/anms_1.jpg> <./draft_outputs/matching.png (PNG copy)> <./draft_outputs/ransac.png (PNG copy)>]
+<./draft_outputs/set3_feather_cylindrical.png, id=18, 1813.77625pt x 915.42pt>
+File: ./draft_outputs/set3_feather_cylindrical.png Graphic file (type png)
+<use ./draft_outputs/set3_feather_cylindrical.png>
+Package pdftex.def Info: ./draft_outputs/set3_feather_cylindrical.png  used on input line 526.
+(pdftex.def)             Requested size: 252.0pt x 127.18015pt.
+<./draft_outputs/set3_poisson_mypano.png, id=19, 6283.475pt x 4538.9575pt>
+File: ./draft_outputs/set3_poisson_mypano.png Graphic file (type png)
+<use ./draft_outputs/set3_poisson_mypano.png>
+Package pdftex.def Info: ./draft_outputs/set3_poisson_mypano.png  used on input line 533.
+(pdftex.def)             Requested size: 252.0pt x 182.01219pt.
+<./draft_outputs/testset1.png, id=20, 934.49126pt x 1950.28625pt>
+File: ./draft_outputs/testset1.png Graphic file (type png)
+<use ./draft_outputs/testset1.png>
+Package pdftex.def Info: ./draft_outputs/testset1.png  used on input line 545.
+(pdftex.def)             Requested size: 252.0pt x 525.89987pt.
+<./draft_outputs/testset2.png, id=21, 1582.91376pt x 1462.46375pt>
+File: ./draft_outputs/testset2.png Graphic file (type png)
+<use ./draft_outputs/testset2.png>
+Package pdftex.def Info: ./draft_outputs/testset2.png  used on input line 552.
+(pdftex.def)             Requested size: 252.0pt x 232.81627pt.
+<./draft_outputs/testset3.png, id=22, 1540.75626pt x 1507.6325pt>
+File: ./draft_outputs/testset3.png Graphic file (type png)
+<use ./draft_outputs/testset3.png>
+Package pdftex.def Info: ./draft_outputs/testset3.png  used on input line 559.
+(pdftex.def)             Requested size: 252.0pt x 246.56319pt.
+<./draft_outputs/testset4.png, id=23, 1198.4775pt x 1426.32875pt>
+File: ./draft_outputs/testset4.png Graphic file (type png)
+<use ./draft_outputs/testset4.png>
+Package pdftex.def Info: ./draft_outputs/testset4.png  used on input line 566.
+(pdftex.def)             Requested size: 252.0pt x 299.90787pt.
+<./draft_outputs/set1_feather.png, id=24, 934.49126pt x 759.83875pt>
+File: ./draft_outputs/set1_feather.png Graphic file (type png)
+<use ./draft_outputs/set1_feather.png>
+Package pdftex.def Info: ./draft_outputs/set1_feather.png  used on input line 573.
+(pdftex.def)             Requested size: 252.0pt x 204.89253pt.
+<./draft_outputs/set2_feather.png, id=25, 1626.075pt x 948.54375pt>
+File: ./draft_outputs/set2_feather.png Graphic file (type png)
+<use ./draft_outputs/set2_feather.png>
+Package pdftex.def Info: ./draft_outputs/set2_feather.png  used on input line 580.
+(pdftex.def)             Requested size: 252.0pt x 146.9938pt.
+
+
+
+Underfull \vbox (badness 1515) has occurred while \output is active []
+
+
+
+[3 <./draft_outputs/set3_feather_cylindrical.png (PNG copy)> <./draft_outputs/set3_poisson_mypano.png (PNG copy)> <./draft_outputs/testset1.png (PNG copy)>]
+
+
+
+[4 <./draft_outputs/testset2.png (PNG copy)> <./draft_outputs/testset3.png (PNG copy)> <./draft_outputs/testset4.png (PNG copy)> <./draft_outputs/set1_feather.png (PNG copy)>]
 LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <7> on input line 405.
+(Font)              <8> on input line 747.
 LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <5> on input line 405.
+(Font)              <6> on input line 747.
 LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <8> on input line 564.
-LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <6> on input line 564.
+(Font)              <5> on input line 747.
+
 
 ** Conference Paper **
 Before submitting the final camera ready copy, remember to:
@@ -148,29 +307,31 @@ Before submitting the final camera ready copy, remember to:
 
 
 
-[1{/usr/local/texlive/2025/texmf-var/fonts/map/pdftex/updmap/pdftex.map}{/usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/base/8r.enc}
+[5
 
-
-
-] (./Draft.aux)
+ <./draft_outputs/set2_feather.png (PNG copy)>] (./Draft.aux)
  ***********
 LaTeX2e <2024-11-01> patch level 2
 L3 programming layer <2025-03-26>
  ***********
+
+
+LaTeX Warning: There were multiply-defined labels.
+
  ) 
 Here is how much of TeX's memory you used:
- 1277 strings out of 469626
- 25257 string characters out of 5471010
- 429118 words of memory out of 5000000
- 28149 multiletter control sequences out of 15000+600000
- 661913 words of font info for 98 fonts, out of 8000000 for 9000
+ 2231 strings out of 469626
+ 41840 string characters out of 5471010
+ 438118 words of memory out of 5000000
+ 29070 multiletter control sequences out of 15000+600000
+ 660835 words of font info for 97 fonts, out of 8000000 for 9000
  1144 hyphenation exceptions out of 8191
- 36i,8n,39p,236b,256s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 57i,8n,65p,253b,256s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/local/texlive/2025/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/urw/times/utmbi8a.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
-Output written on Draft.pdf (1 page, 51558 bytes).
+Output written on Draft.pdf (5 pages, 29696802 bytes).
 PDF statistics:
- 29 PDF objects out of 1000 (max. 8388607)
- 17 compressed objects within 1 object stream
+ 54 PDF objects out of 1000 (max. 8388607)
+ 25 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
- 1 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 66 words of extra memory for PDF output out of 10000 (max. 10000000)
 
