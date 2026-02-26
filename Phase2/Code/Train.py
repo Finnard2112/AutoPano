@@ -125,7 +125,7 @@ def PrettyPrint(NumEpochs, DivTrain, MiniBatchSize, NumTrainSamples, LatestFile)
     
 def TrainOperation(ImgPH, LabelPH, DirNamesTrain, TrainLabels, NumTrainSamples, ImageSize,
                    NumEpochs, MiniBatchSize, SaveCheckPoint, CheckPointPath,
-                   DivTrain, LatestFile, BasePath, LogsPath, ModelType):
+                   DivTrain, LatestFile, BasePath, LogsPath, ModelType, is_training):
     """
     Inputs: 
     ImgPH is the Input Image placeholder
@@ -149,20 +149,16 @@ def TrainOperation(ImgPH, LabelPH, DirNamesTrain, TrainLabels, NumTrainSamples, 
     # Predict output with forward pass
     #print the shape of ImgPH
     print(f"ImgPH shape: {ImgPH.shape}")
-    prLogits, prSoftMax = HomographyModel(ImgPH, ImageSize, MiniBatchSize)
+    prLogits, prSoftMax = HomographyModel(ImgPH, ImageSize, MiniBatchSize, is_training)
 
     with tf.name_scope('Loss'):
         ###############################################
         # Fill your loss function of choice here!
         ###############################################
-        # L2 loss (Mean Squared Error)
-        loss = tf.reduce_mean(tf.square(prSoftMax - LabelPH))
+        # L1 loss (Mean Absolute Error)
+        loss = tf.reduce_mean(tf.abs(prSoftMax - LabelPH))
 
     with tf.name_scope('Adam'):
-        ###############################################
-        # Fill your optimizer of choice here!
-        ###############################################
-        # AdamW optimizer with weight decay
         # This tells TF to actually update the Batch Norm values every step
         update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
         with tf.control_dependencies(update_ops):
@@ -194,7 +190,7 @@ def TrainOperation(ImgPH, LabelPH, DirNamesTrain, TrainLabels, NumTrainSamples, 
             NumIterationsPerEpoch = int(NumTrainSamples/MiniBatchSize/DivTrain)
             for PerEpochCounter in tqdm(range(NumIterationsPerEpoch)):
                 I1Batch, LabelBatch = GenerateBatch(BasePath, DirNamesTrain, TrainLabels, ImageSize, MiniBatchSize)
-                FeedDict = {ImgPH: I1Batch, LabelPH: LabelBatch}
+                FeedDict = {ImgPH: I1Batch, LabelPH: LabelBatch, is_training: True}
                 _, LossThisBatch, Summary = sess.run([Optimizer, loss, MergedSummaryOP], feed_dict=FeedDict)
                 
                 # Save checkpoint every some SaveCheckPoint's iterations
@@ -260,10 +256,11 @@ def main():
     # Define PlaceHolder variables for Input and Predicted output
     ImgPH = tf.placeholder(tf.float32, shape=(MiniBatchSize, ImageSize[0], ImageSize[1], ImageSize[2]))
     LabelPH = tf.placeholder(tf.float32, shape=(MiniBatchSize, 8)) # Not OneHOT. Just the 8 values.
-    
+    is_training = tf.placeholder(tf.bool, name='is_training')
+
     TrainOperation(ImgPH, LabelPH, DirNamesTrain, TrainLabels, NumTrainSamples, ImageSize,
                    NumEpochs, MiniBatchSize, SaveCheckPoint, CheckPointPath,
-                   DivTrain, LatestFile, BasePath, LogsPath, ModelType)
+                   DivTrain, LatestFile, BasePath, LogsPath, ModelType, is_training)
         
     
 if __name__ == '__main__':

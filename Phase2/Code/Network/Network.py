@@ -1,69 +1,55 @@
-"""
-CMSC733 Spring 2019: Classical and Deep Learning Approaches for
-Geometric Computer Vision
-Homework 0: Alohomora: Phase 2 Starter Code
-
-
-Author(s):
-Nitin J. Sanket (nitinsan@terpmail.umd.edu)
-PhD Candidate in Computer Science,
-University of Maryland, College Park
-"""
+import os
+# MANDATORY: This must happen BEFORE any tensorflow import
+os.environ["TF_USE_LEGACY_KERAS"] = "1"
 
 import tensorflow.compat.v1 as tf
 tf.disable_v2_behavior()
 import sys
 import numpy as np
-# Don't generate pyc codes
 sys.dont_write_bytecode = True
 
-def HomographyModel(Img, ImageSize, MiniBatchSize):
-    """
-    Inputs: 
-    Img is a MiniBatch of the current image
-    ImageSize - Size of the Image (128x128x6)
-    Outputs:
-    prLogits - logits output of the network
-    prSoftMax - softmax output of the network
-    """
+def HomographyModel(Img, ImageSize, MiniBatchSize, is_training):
+    # Enforce static shape for the graph
+    Img.set_shape([MiniBatchSize, 128, 128, 6])
     
-    # Conv Block 1
-    conv1_1 = tf.keras.layers.Conv2D(64, 3, activation='relu', padding='same', name='conv1_1')(Img)
-    conv1_1 = tf.keras.layers.BatchNormalization(name='bn1_1')(conv1_1)
-    conv1_2 = tf.keras.layers.Conv2D(64, 3, activation='relu', padding='same', name='conv1_2')(conv1_1)
-    conv1_2 = tf.keras.layers.BatchNormalization(name='bn1_2')(conv1_2)
-    pool1 = tf.keras.layers.MaxPooling2D(2, 2, name='pool1')(conv1_2)
+    # We use tf.layers (V1 style) which is compatible with tf-keras legacy mode
+    def conv_bn_relu(x, filters, name):
+        with tf.variable_scope(name, reuse=tf.AUTO_REUSE):
+            # Using the direct layers interface
+            x = tf.layers.conv2d(x, filters, 3, padding='same', name='conv')
+            x = tf.layers.batch_normalization(x, training=is_training, name='bn')
+            x = tf.nn.relu(x)
+        return x
 
-    # Conv Block 2
-    conv2_1 = tf.keras.layers.Conv2D(64, 3, activation='relu', padding='same', name='conv2_1')(pool1)
-    conv2_1 = tf.keras.layers.BatchNormalization(name='bn2_1')(conv2_1)
-    conv2_2 = tf.keras.layers.Conv2D(64, 3, activation='relu', padding='same', name='conv2_2')(conv2_1)
-    conv2_2 = tf.keras.layers.BatchNormalization(name='bn2_2')(conv2_2)
-    pool2 = tf.keras.layers.MaxPooling2D(2, 2, name='pool2')(conv2_2)
+    # Block 1
+    x = conv_bn_relu(Img, 64, 'b1_1')
+    x = conv_bn_relu(x, 64, 'b1_2')
+    x = tf.layers.max_pooling2d(x, 2, 2, name='p1')
 
-    # Conv Block 3
-    conv3_1 = tf.keras.layers.Conv2D(128, 3, activation='relu', padding='same', name='conv3_1')(pool2)
-    conv3_1 = tf.keras.layers.BatchNormalization(name='bn3_1')(conv3_1)
-    conv3_2 = tf.keras.layers.Conv2D(128, 3, activation='relu', padding='same', name='conv3_2')(conv3_1)
-    conv3_2 = tf.keras.layers.BatchNormalization(name='bn3_2')(conv3_2)
-    pool3 = tf.keras.layers.MaxPooling2D(2, 2, name='pool3')(conv3_2)
+    # Block 2
+    x = conv_bn_relu(x, 64, 'b2_1')
+    x = conv_bn_relu(x, 64, 'b2_2')
+    x = tf.layers.max_pooling2d(x, 2, 2, name='p2')
 
-    # Conv Block 4
-    conv4_1 = tf.keras.layers.Conv2D(128, 3, activation='relu', padding='same', name='conv4_1')(pool3)
-    conv4_1 = tf.keras.layers.BatchNormalization(name='bn4_1')(conv4_1)
-    conv4_2 = tf.keras.layers.Conv2D(128, 3, activation='relu', padding='same', name='conv4_2')(conv4_1)
-    conv4_2 = tf.keras.layers.BatchNormalization(name='bn4_2')(conv4_2)
+    # Block 3
+    x = conv_bn_relu(x, 128, 'b3_1')
+    x = conv_bn_relu(x, 128, 'b3_2')
+    x = tf.layers.max_pooling2d(x, 2, 2, name='p3')
 
-    # Fully Connected Layers
-    flat = tf.keras.layers.Flatten(name='flatten')(conv4_2)
-    fc1 = tf.keras.layers.Dense(1024, activation='relu', name='fc1')(flat)
-    drop1 = tf.keras.layers.Dropout(0.5, name='dropout1')(fc1)
-    fc2 = tf.keras.layers.Dense(1024, activation='relu', name='fc2')(drop1)
-    drop2 = tf.keras.layers.Dropout(0.5, name='dropout2')(fc2)
+    # Block 4
+    x = conv_bn_relu(x, 128, 'b4_1')
+    x = conv_bn_relu(x, 128, 'b4_2')
 
-    # Output Layer (8 homography values)
-    prLogits = tf.keras.layers.Dense(8, activation=None, name='output')(drop2)
-    prSoftMax = prLogits
+    # Fully Connected
+    x = tf.layers.flatten(x)
+    x = tf.layers.dense(x, 1024, activation=tf.nn.relu, name='fc1')
+    x = tf.layers.dropout(x, rate=0.5, training=is_training, name='d1')
+    
+    x = tf.layers.dense(x, 1024, activation=tf.nn.relu, name='fc2')
+    x = tf.layers.dropout(x, rate=0.5, training=is_training, name='d2')
+
+    # Output: tanh for [-1, 1] range (Common for Homography Net delta-four-point)
+    prLogits = tf.layers.dense(x, 8, activation=tf.nn.tanh, name='out')
+    prSoftMax = prLogits # Regression doesn't use Softmax, but kept for your return signature
     
     return prLogits, prSoftMax
-
