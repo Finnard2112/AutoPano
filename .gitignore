@@ -10,8 +10,9 @@ Phase2/Test_Warp_Blend_Results/*
 Phase2/Code/Tests/*
 Phase2/Debug_Inference/*
 Phase2/Output/*
-
 *.txt
+
+
 *.md
 
 # Ignore Python cache files
@@ -36,5 +37,6 @@ Logs/
 # Ignore OS files
 .DS_Store
 Thumbs.db
+
 
 

@@ -29,30 +29,30 @@ def HomographyModel(Img, ImageSize, MiniBatchSize):
     
     # Conv Block 1
     conv1_1 = tf.keras.layers.Conv2D(64, 3, activation='relu', padding='same', name='conv1_1')(Img)
-    # conv1_1 = tf.keras.layers.BatchNormalization(name='bn1_1')(conv1_1)
+    conv1_1 = tf.keras.layers.BatchNormalization(name='bn1_1')(conv1_1)
     conv1_2 = tf.keras.layers.Conv2D(64, 3, activation='relu', padding='same', name='conv1_2')(conv1_1)
-    # conv1_2 = tf.keras.layers.BatchNormalization(name='bn1_2')(conv1_2)
+    conv1_2 = tf.keras.layers.BatchNormalization(name='bn1_2')(conv1_2)
     pool1 = tf.keras.layers.MaxPooling2D(2, 2, name='pool1')(conv1_2)
 
     # Conv Block 2
     conv2_1 = tf.keras.layers.Conv2D(64, 3, activation='relu', padding='same', name='conv2_1')(pool1)
-    # conv2_1 = tf.keras.layers.BatchNormalization(name='bn2_1')(conv2_1)
+    conv2_1 = tf.keras.layers.BatchNormalization(name='bn2_1')(conv2_1)
     conv2_2 = tf.keras.layers.Conv2D(64, 3, activation='relu', padding='same', name='conv2_2')(conv2_1)
-    # conv2_2 = tf.keras.layers.BatchNormalization(name='bn2_2')(conv2_2)
+    conv2_2 = tf.keras.layers.BatchNormalization(name='bn2_2')(conv2_2)
     pool2 = tf.keras.layers.MaxPooling2D(2, 2, name='pool2')(conv2_2)
 
     # Conv Block 3
     conv3_1 = tf.keras.layers.Conv2D(128, 3, activation='relu', padding='same', name='conv3_1')(pool2)
-    # conv3_1 = tf.keras.layers.BatchNormalization(name='bn3_1')(conv3_1)
+    conv3_1 = tf.keras.layers.BatchNormalization(name='bn3_1')(conv3_1)
     conv3_2 = tf.keras.layers.Conv2D(128, 3, activation='relu', padding='same', name='conv3_2')(conv3_1)
-    # conv3_2 = tf.keras.layers.BatchNormalization(name='bn3_2')(conv3_2)
+    conv3_2 = tf.keras.layers.BatchNormalization(name='bn3_2')(conv3_2)
     pool3 = tf.keras.layers.MaxPooling2D(2, 2, name='pool3')(conv3_2)
 
     # Conv Block 4
     conv4_1 = tf.keras.layers.Conv2D(128, 3, activation='relu', padding='same', name='conv4_1')(pool3)
-    # conv4_1 = tf.keras.layers.BatchNormalization(name='bn4_1')(conv4_1)
+    conv4_1 = tf.keras.layers.BatchNormalization(name='bn4_1')(conv4_1)
     conv4_2 = tf.keras.layers.Conv2D(128, 3, activation='relu', padding='same', name='conv4_2')(conv4_1)
-    # conv4_2 = tf.keras.layers.BatchNormalization(name='bn4_2')(conv4_2)
+    conv4_2 = tf.keras.layers.BatchNormalization(name='bn4_2')(conv4_2)
 
     # Fully Connected Layers
     flat = tf.keras.layers.Flatten(name='flatten')(conv4_2)

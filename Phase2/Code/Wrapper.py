@@ -96,13 +96,21 @@ def main():
 		
 		# Compute homographies between consecutive images
 		for i in range(num_images - 1):
+			# Get original image dimensions
+			h_orig, w_orig = images[i].shape[:2]
+			
+			# Calculate scaling factors
+			scale_x = w_orig / 128.0
+			scale_y = h_orig / 128.0
+			
 			# Resize images to 128x128
 			img1_resized = cv.resize(images[i], (128, 128))
 			img2_resized = cv.resize(images[i+1], (128, 128))
 			
 			# Stack images (reference first, then image to warp)
-			stacked_img = np.dstack([img1_resized, img2_resized]) 
-			stacked_img = np.expand_dims(stacked_img, axis=0).astype(np.float32) / 255.0
+			stacked_img = np.dstack([img1_resized, img2_resized]).astype(np.float32)
+			stacked_img = (stacked_img / 127.5) - 1.0
+			stacked_img = np.expand_dims(stacked_img, axis=0)
 
 			# --- Sanity Check: Save to Disk ---
 			# 1. Ensure a directory exists for these checks
@@ -124,14 +132,20 @@ def main():
 			cv.imwrite(debug_filename, side_by_side)
 			# ----------------------------------
 			
-			# Run inference
-			H_4pt = sess.run(prSoftMax, feed_dict={ImgPH: stacked_img})
-			H_4pt = H_4pt.reshape((4, 2))
+			# Run inference to get 128x128-scale displacements
+			H_4pt_small = sess.run(prSoftMax, feed_dict={ImgPH: stacked_img})
+			H_4pt_small = H_4pt_small.reshape((4, 2)) * 32.0
 			
-			# Convert 4-point homography to 3x3 matrix
-			pts_src = np.float32([[0, 0], [128, 0], [128, 128], [0, 128]])
-			pts_dst = pts_src + H_4pt
-			H = cv.getPerspectiveTransform(pts_src, pts_dst)
+			# Scale the displacements to full resolution
+			# scale_x = w_orig / 128.0
+			# scale_y = h_orig / 128.0
+			H_4pt_large = H_4pt_small * np.array([scale_x, scale_y])
+			
+			# Define corners for the full resolution image
+			pts_src_large = np.float32([[0, 0], [w_orig, 0], [w_orig, h_orig], [0, h_orig]])
+			pts_dst_large = (pts_src_large + H_4pt_large).astype(np.float32).reshape(4, 2)			
+			# Get the homography matrix for the large image
+			H = cv.getPerspectiveTransform(pts_src_large, pts_dst_large)
 			
 			homographies.append(H)
 	

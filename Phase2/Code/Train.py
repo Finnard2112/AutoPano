@@ -16,12 +16,12 @@ University of Maryland, College Park
 # opencv, do (pip install opencv-python)
 # skimage, do (apt install python-skimage)
 # termcolor, do (pip install termcolor)
-
+import os
 import tensorflow.compat.v1 as tf
 tf.disable_v2_behavior()
 import cv2
 import sys
-import os
+
 import glob
 # import Misc.ImageUtils as iu
 import random
@@ -77,32 +77,33 @@ def GenerateBatch(BasePath, DirNamesTrain, TrainLabels, ImageSize, MiniBatchSize
         OriginalImg = np.float32(cv2.imread(OriginalImageName))
         WarpedImg = np.float32(cv2.imread(WarpedImageName))
         
-        # Standardization: normalize to [0, 1] range
-        OriginalImg = OriginalImg / 255.0
-        WarpedImg = WarpedImg / 255.0
+        # Standardization: normalize to [-1, 1] range
+        OriginalImg = (OriginalImg / 127.5) - 1.0
+        WarpedImg = (WarpedImg / 127.5) - 1.0
         
-        # Data augmentation: random horizontal flip
-        if random.random() > 0.5:
-            OriginalImg = cv2.flip(OriginalImg, 1)
-            WarpedImg = cv2.flip(WarpedImg, 1)
+        # # Data augmentation: random horizontal flip
+        # if random.random() > 0.5:
+        #     OriginalImg = cv2.flip(OriginalImg, 1)
+        #     WarpedImg = cv2.flip(WarpedImg, 1)
         
-        # Data augmentation: random brightness adjustment
-        brightness_factor = random.uniform(0.8, 1.2)
-        OriginalImg = np.clip(OriginalImg * brightness_factor, 0.0, 1.0)
-        WarpedImg = np.clip(WarpedImg * brightness_factor, 0.0, 1.0)
+        # # Data augmentation: random brightness adjustment
+        # brightness_factor = random.uniform(0.8, 1.2)
+        # OriginalImg = np.clip(OriginalImg * brightness_factor, -1.0, 1.0)
+        # WarpedImg = np.clip(WarpedImg * brightness_factor, -1.0, 1.0)
         
-        # Data augmentation: random rotation (small angle)
-        if random.random() > 0.5:
-            angle = random.uniform(-10, 10)
-            h, w = OriginalImg.shape[:2]
-            M = cv2.getRotationMatrix2D((w/2, h/2), angle, 1.0)
-            OriginalImg = cv2.warpAffine(OriginalImg, M, (w, h), borderMode=cv2.BORDER_REFLECT)
-            WarpedImg = cv2.warpAffine(WarpedImg, M, (w, h), borderMode=cv2.BORDER_REFLECT)
+        # # Data augmentation: random rotation (small angle)
+        # if random.random() > 0.5:
+        #     angle = random.uniform(-10, 10)
+        #     h, w = OriginalImg.shape[:2]
+        #     M = cv2.getRotationMatrix2D((w/2, h/2), angle, 1.0)
+        #     OriginalImg = cv2.warpAffine(OriginalImg, M, (w, h), borderMode=cv2.BORDER_REFLECT)
+        #     WarpedImg = cv2.warpAffine(WarpedImg, M, (w, h), borderMode=cv2.BORDER_REFLECT)
         
         # Stack Original and Warped images along channel dimension (3+3=6 channels)
         I1 = np.concatenate([OriginalImg, WarpedImg], axis=2)
         
-        Label = TrainLabels[RandIdx]
+        rho = 32.0
+        Label = TrainLabels[RandIdx] / rho
 
         I1Batch.append(I1)
         LabelBatch.append(Label)
@@ -162,8 +163,10 @@ def TrainOperation(ImgPH, LabelPH, DirNamesTrain, TrainLabels, NumTrainSamples, 
         # Fill your optimizer of choice here!
         ###############################################
         # AdamW optimizer with weight decay
-        Optimizer = tf.train.AdamOptimizer(learning_rate=1e-4).minimize(loss)
-    # Tensorboard
+        # This tells TF to actually update the Batch Norm values every step
+        update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
+        with tf.control_dependencies(update_ops):
+            Optimizer = tf.train.AdamOptimizer(learning_rate=1e-3).minimize(loss)    # Tensorboard
     # Create a summary to monitor loss tensor
     tf.summary.scalar('LossEveryIter', loss)
     # tf.summary.image('Anything you want', AnyImg)
@@ -223,10 +226,10 @@ def main():
     Parser = argparse.ArgumentParser()
     Parser.add_argument('--BasePath', default='/nfshomes/hw987/cmsc733_Vision/YourDirectoryID_p1/Phase2/Data/Patches', help='Base path of images, Default:/nfshomes/hw987/cmsc733_Vision/YourDirectoryID_p1/Phase2/Data/Patches')
     Parser.add_argument('--CheckPointPath', default='../Checkpoints/', help='Path to save Checkpoints, Default: ../Checkpoints/')
-    Parser.add_argument('--ModelType', default='Unsup', help='Model type, Supervised or Unsupervised? Choose from Sup and Unsup, Default:Unsup')
+    Parser.add_argument('--ModelType', default='Sup', help='Model type, Supervised or Unsupervised? Choose from Sup and Unsup, Default:Unsup')
     Parser.add_argument('--NumEpochs', type=int, default=50, help='Number of Epochs to Train for, Default:50')
     Parser.add_argument('--DivTrain', type=int, default=1, help='Factor to reduce Train data by per epoch, Default:1')
-    Parser.add_argument('--MiniBatchSize', type=int, default=1, help='Size of the MiniBatch to use, Default:1')
+    Parser.add_argument('--MiniBatchSize', type=int, default=64, help='Size of the MiniBatch to use, Default:1')
     Parser.add_argument('--LoadCheckPoint', type=int, default=0, help='Load Model from latest Checkpoint from CheckPointsPath?, Default:0')
     Parser.add_argument('--LogsPath', default='Logs/', help='Path to save Logs for Tensorboard, Default=Logs/')
 

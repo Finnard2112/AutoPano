@@ -21,7 +21,6 @@ import numpy as np
 import cv2 as cv
 # Add any python libraries here
 import os
-import helper
 from matplotlib import pyplot as plt
 from skimage.feature import peak_local_max
 import argparse
@@ -56,9 +55,12 @@ def main():
 		p_w = 128
 		p_h = 128
 
-		
-		#TODO: make sure corners not too close to the edges, or else the perturbed corners will be too close to the edges
+		# Must be at least (patch_size + 2*rho) in both dimensions
+		if height <= (p_h + 2*rho) or width <= (p_w + 2*rho):
+			print(f"Skipping image {i+1}: dimensions ({width}x{height}) too small for patch.")
+			continue
 
+		
 		# 3. Generate a random top-left corner (x, y)
 		x1 = np.random.randint(rho, width - p_w - rho)
 		y1 = np.random.randint(rho, height - p_h - rho)
